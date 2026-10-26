@@ -5,35 +5,33 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRequest;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $users = User::orderBy('created_at', 'DESC')->paginate(20);
+        $users = User::latest()->paginate(20);
+
         return view('admin.users.index', compact('users'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return view('admin.users.form');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(UserRequest $request)
     {
-        $params = $request->all();
-        User::create($params);
+        User::create([
+            'name' => $request->string('name')->toString(),
+            'email' => $request->string('email')->toString(),
+            'role' => $request->string('role')->toString(),
+            'password' => Hash::make($request->string('password')->toString()),
+        ]);
 
-        session()->flash('success', 'Пользователя ' . $request->title . ' добавлен');
+        session()->flash('success', 'Пользователь '.$request->string('name').' добавлен');
+
         return redirect()->route('admin-users.index');
     }
 
@@ -44,19 +42,49 @@ class UserController extends Controller
 
     public function update(UserRequest $request, User $admin_user)
     {
-        $params = $request->all();
+        $role = $request->string('role')->toString();
 
-        $admin_user->update($params);
-        session()->flash('success', 'Данные пользователя ' . $admin_user->title . ' обновлены');
+        if ($this->isLastAdmin($admin_user) && $role !== 'admin') {
+            return back()
+                ->withErrors(['role' => 'Нельзя снять роль с последнего администратора'])
+                ->withInput();
+        }
+
+        $data = [
+            'name' => $request->string('name')->toString(),
+            'email' => $request->string('email')->toString(),
+            'role' => $role,
+        ];
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->string('password')->toString());
+        }
+
+        $admin_user->update($data);
+        session()->flash('success', 'Данные пользователя '.$admin_user->name.' обновлены');
+
         return redirect()->route('admin-users.index');
     }
-
 
     public function destroy(User $admin_user)
     {
+        if ($admin_user->is(auth()->user())) {
+            return back()->with('warning', 'Нельзя удалить свою учетную запись');
+        }
+
+        if ($this->isLastAdmin($admin_user)) {
+            return back()->with('warning', 'Нельзя удалить последнего администратора');
+        }
+
+        $name = $admin_user->name;
         $admin_user->delete();
-        session()->flash('success', 'Пользователь ' . $admin_user->title . ' удален из системы');
+        session()->flash('success', 'Пользователь '.$name.' удален из системы');
+
         return redirect()->route('admin-users.index');
     }
 
+    private function isLastAdmin(User $user): bool
+    {
+        return $user->role === 'admin' && User::where('role', 'admin')->count() === 1;
+    }
 }

@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class Event extends Model
 {
@@ -13,8 +14,22 @@ class Event extends Model
         'title_event',
     ];
 
-    public function showDate(){
-        return Carbon::createFromFormat('Y-m-d H:i:s', $this->created_at)->format('d/m/Y H:i');
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
+    public function showDate(): string
+    {
+        return $this->created_at?->timezone(config('app.timezone'))->format('d/m/Y H:i') ?? '';
+    }
+
+    public static function record(string $title): void
+    {
+        static::create([
+            'user_id' => Auth::id(),
+            'user_ip' => (string) (request()->ip() ?? '0.0.0.0'),
+            'title_event' => Str::limit($title, 250, ''),
+        ]);
+    }
 }

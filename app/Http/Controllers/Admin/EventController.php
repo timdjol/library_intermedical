@@ -7,20 +7,19 @@ use App\Models\Event;
 
 class EventController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $events = Event::paginate(15);
+        $events = Event::with('user')->latest()->paginate(15);
+
         return view('admin.events.index', compact('events'));
     }
 
     public function destroy(Event $admin_event)
     {
+        $title = $admin_event->title_event;
         $admin_event->delete();
-        session()->flash('success', 'Событие ' . $admin_event->title_event . ' удалено из системы');
+        session()->flash('success', 'Событие '.$title.' удалено из системы');
+
         return redirect()->route('admin-events.index');
     }
-
 }

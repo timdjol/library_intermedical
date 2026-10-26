@@ -35,12 +35,7 @@
                         @foreach($events as $event)
                             <tr>
                                 <td>{{ $event->id }}</td>
-                                <td>
-                                    @php
-                                    $user = \App\Models\User::where('id', $event->user_id)->firstOrFail();
-                                    @endphp
-                                    {{ $user->name }}
-                                </td>
+                                <td>{{ $event->user->name ?? 'Удалённый пользователь' }}</td>
                                 <td>{{ $event->user_ip }}</td>
                                 <td>{{ $event->title_event }}</td>
                                 <td>{{ $event->showDate() }}</td>

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->string('code')->unique();
+            $table->unsignedBigInteger('parent_id')->default(0)->index();
             $table->timestamps();
         });
     }

@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # Library files are served through an authenticated controller.
+    RewriteRule ^storage/documents(/|$) - [F,L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

@@ -8,106 +8,77 @@ use App\Http\Requests\PostUpdateRequest;
 use App\Models\Category;
 use App\Models\Event;
 use App\Models\Post;
+use App\Support\StoredFile;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $posts = auth()->user()->posts()->isActive()->orderBy('created_at', 'DESC')->paginate(20);
+        $posts = auth()->user()->posts()->latest()->paginate(20);
+
         return view('agent.posts.index', compact('posts'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        $categories = Category::get();
+        $categories = Category::orderBy('title')->get();
+
         return view('agent.posts.form', compact('categories'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(PostRequest $request)
     {
-        $request['code'] = Str::slug($request->title);
-        $params = $request->all();
-        $post = Post::create($params);
+        $post = Post::createFromRequest($request);
+        Event::record('Добавлена книга '.$post->title);
+        session()->flash('success', 'Книга '.$post->title.' добавлена');
 
-        unset($params['title_event']);
-        $title_event = 'Добавлена книга ' . $post->title;
-        $params['title_event'] = $title_event;
-        Event::create($params);
-        $post->categories()->attach($request->categories_id);
-
-        session()->flash('success', 'Книга ' . $request->title . ' добавлена');
         return redirect()->route('agent-posts.index');
     }
 
     public function show(Post $agent_post)
     {
-        Event::create(
-            [
-                'user_ip' => request()->getClientIp(),
-                'user_id' => Auth::id(),
-                'title_event' => 'Просмотрена книга ' . $agent_post->title,
-            ]
-        );
+        $this->authorizeOwner($agent_post);
+        $agent_post->load('categories');
+        Event::record('Просмотрена книга '.$agent_post->title);
+
         return view('agent.posts.show', compact('agent_post'));
     }
 
     public function edit(Post $agent_post)
     {
-        $categories = Category::get();
+        $this->authorizeOwner($agent_post);
+        $categories = Category::orderBy('title')->get();
+        $agent_post->load('categories');
+
         return view('agent.posts.form', compact('agent_post', 'categories'));
     }
 
     public function update(PostUpdateRequest $request, Post $agent_post)
     {
-        $request['code'] = Str::slug($request->title);
-        $params = $request->all();
+        $this->authorizeOwner($agent_post);
+        $previousTitle = $agent_post->title;
+        $agent_post->updateFromRequest($request);
+        Event::record('Изменена книга '.$previousTitle.' на '.$agent_post->title);
+        session()->flash('success', 'Книга '.$agent_post->title.' обновлена');
 
-        unset($params['image']);
-        if($request->has('image')){
-            if($agent_post->image != null) {
-                Storage::delete($agent_post->image);
-            }
-            $path = $request->file('image')->store('posts');
-            $params['image'] = $path;
-        }
-
-
-        unset($params['title_event']);
-        $title_event = 'Изменена книга ' . $params["old_title"] . ' на ' . $request->title;
-        $params['title_event'] = $title_event;
-        $agent_post->update($params);
-        $agent_post->categories()->sync($request->categories_id);
-        Event::create($params);
-
-        session()->flash('success', 'Книга ' . $agent_post->title . ' обновлена');
         return redirect()->route('agent-posts.index');
     }
-
 
     public function destroy(Post $agent_post)
     {
+        $this->authorizeOwner($agent_post);
+        StoredFile::delete($agent_post->image);
+        $title = $agent_post->title;
         $agent_post->delete();
-        Event::create(
-            [
-                'user_ip' => request()->getClientIp(),
-                'user_id' => Auth::id(),
-                'title_event' => 'Удалена книга ' . $agent_post->title,
-            ]
-        );
-        session()->flash('success', 'Книга ' . $agent_post->title . ' удалена');
+        Event::record('Удалена книга '.$title);
+        session()->flash('success', 'Книга '.$title.' удалена');
+
         return redirect()->route('agent-posts.index');
     }
 
+    private function authorizeOwner(Post $post): void
+    {
+        abort_unless($post->user_id === Auth::id(), 403);
+    }
 }

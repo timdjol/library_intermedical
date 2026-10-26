@@ -9,24 +9,23 @@ use Illuminate\Support\Facades\Auth;
 
 class ArticleController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $posts = Post::isActive()->where('user_id', '!=', Auth::id())->orderBy('created_at', 'DESC')->paginate(20);
+        $posts = Post::isActive()
+            ->where('user_id', '!=', Auth::id())
+            ->latest()
+            ->paginate(20);
+
         return view('agent.articles.index', compact('posts'));
     }
 
-    public function show(Post $agent_post)
+    public function show(Post $agent_article)
     {
-        Event::create(
-            [
-                'user_ip' => request()->getClientIp(),
-                'user_id' => Auth::id(),
-                'title_event' => 'Просмотрена книга ' . $agent_post->title,
-            ]
-        );
-        return view('agent.articles.show', compact('agent_post'));
+        abort_unless((int) $agent_article->status === 1, 404);
+
+        $agent_article->load('categories');
+        Event::record('Просмотрена книга '.$agent_article->title);
+
+        return view('agent.articles.show', ['agent_post' => $agent_article]);
     }
 }

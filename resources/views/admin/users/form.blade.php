@@ -44,8 +44,7 @@
                             <div class="alert alert-danger">{{ $message }}</div>
                             @enderror
                             <label for="">Email</label>
-                            <input type="text" name="email" value="{{ old('value', isset($admin_user) ? $admin_user->email :
-                             null) }}">
+                            <input type="email" name="email" value="{{ old('email', isset($admin_user) ? $admin_user->email : null) }}" autocomplete="off">
                         </div>
 
                         <div class="form-group">
@@ -54,11 +53,9 @@
                             @enderror
                             <label for="">Роль пользователя</label>
                             <select name="role">
-                                @isset($admin_user)
-                                    <option value="{{ $admin_user->role }}">{{ $admin_user->role }}</option>
-                                @endisset
-                                <option value="agent">Пользователь</option>
-                                <option value="admin">Администратор</option>
+                                @foreach(['agent' => 'Пользователь', 'admin' => 'Администратор'] as $value => $label)
+                                    <option value="{{ $value }}" @selected(old('role', isset($admin_user) ? $admin_user->role : 'agent') === $value)>{{ $label }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="form-group">
@@ -66,8 +63,7 @@
                             <div class="alert alert-danger">{{ $message }}</div>
                             @enderror
                             <label for="">Пароль</label>
-                            <input type="password" name="password"
-                                   value="{{ old('password', isset($admin_user) ? $admin_user->password : null) }}">
+                            <input type="password" name="password" autocomplete="new-password" @isset($admin_user) placeholder="Оставьте пустым, чтобы не менять" @endisset>
                         </div>
                         @csrf
                         <button class="btn btn-primary">Отправить</button>

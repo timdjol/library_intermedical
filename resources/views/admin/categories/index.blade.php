@@ -22,7 +22,9 @@
                             <h1>Категории</h1>
                         </div>
                         <div class="col-md-5">
+                            @if(auth()->user()?->role === 'admin')
                             <a class="btn btn-success" href="{{ route('admin-categories.create') }}">Добавить</a>
+                            @endif
                         </div>
                     </div>
                     <table class="table">
@@ -40,6 +42,7 @@
                                 <td>{{ $category->parent->title ?? '' }}</td>
 
                                 <td>
+                                    @if(auth()->user()?->role === 'admin')
                                     <form action="{{ route('admin-categories.destroy', $category) }}" method="post">
                                         <a class="btn btn-warning" href="{{ route('admin-categories.edit', $category)
                                          }}">Редактировать</a>
@@ -47,6 +50,7 @@
                                         @method('DELETE')
                                         <button class="btn btn-danger" onclick="return confirm('Вы уверены, что хотите удалить?')">Удалить</button>
                                     </form>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

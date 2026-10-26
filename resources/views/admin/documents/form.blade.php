@@ -117,9 +117,7 @@
                         <a href="{{ url()->previous() }}" class="btn btn-danger">Отмена</a>
                     </form>
                     @isset($admin_document)
-                        <iframe src="{{ Storage::url($admin_document->path) }}"
-                                width="100%"
-                                height="500px">
+                        @include('documents.preview', ['document' => $admin_document])
                     @endisset
                 </div>
             </div>

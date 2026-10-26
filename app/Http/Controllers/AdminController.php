@@ -11,10 +11,11 @@ class AdminController extends Controller
 {
     public function dashboard()
     {
-        $posts = Post::all();
-        $categories = Category::all();
-        $users = User::all();
-        $events = Event::all();
-        return view('admin.dashboard', compact('users', 'posts', 'categories', 'events'));
+        return view('admin.dashboard', [
+            'postsCount' => Post::count(),
+            'categoriesCount' => Category::count(),
+            'usersCount' => User::count(),
+            'eventsCount' => Event::count(),
+        ]);
     }
 }

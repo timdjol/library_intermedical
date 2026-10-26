@@ -15,10 +15,13 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->string('code')->unique();
-            $table->integer('category_id');
+            $table->integer('category_id')->nullable();
+            $table->unsignedBigInteger('user_id')->nullable()->index();
             $table->text('description');
-            $table->string('image');
+            $table->string('image')->nullable();
+            $table->unsignedTinyInteger('status')->default(1)->index();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

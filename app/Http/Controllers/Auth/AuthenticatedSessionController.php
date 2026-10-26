@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\Event;
-use App\Providers\RouteServiceProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,21 +31,13 @@ class AuthenticatedSessionController extends Controller
 
 
 
-        if ($request->user()->role == "admin") {
-            $url = "admin/dashboard";
-        } else {
-            $url = "agent/console";
-        }
+        $url = match ($request->user()->role) {
+            'admin' => route('admin.dashboard'),
+            'agent' => route('agent.console'),
+            default => route('dashboard'),
+        };
 
-        //$url = "dashboard";
-
-        Event::create(
-            [
-                'user_ip' => request()->getClientIp(),
-                'user_id' => Auth::id(),
-                'title_event' => 'Выполнен вход в систему',
-            ]
-        );
+        Event::record('Выполнен вход в систему');
 
         return redirect()->intended($url);
     }

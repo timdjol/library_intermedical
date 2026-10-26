@@ -78,8 +78,6 @@
                             <textarea name="description" id="editor" rows="6">{{ old('description', isset
                                 ($agent_post) ? $agent_post->description : null) }}</textarea>
                         </div>
-                        <script src="https://cdn.tiny.cloud/1/yxonqgmruy7kchzsv4uizqanbapq2uta96cs0p4y91ov9iod/tinymce/6/tinymce.min.js"
-                                referrerpolicy="origin"></script>
                         <script src="https://cdn.ckeditor.com/ckeditor5/35.1.0/classic/ckeditor.js"></script>
                         <script>
                             ClassicEditor
@@ -94,7 +92,9 @@
                             @enderror
                             <label for="">Изображение</label>
                             @isset($agent_post)
-                                <img src="{{ Storage::url($agent_post->image) }}" alt="">
+                                @if($agent_post->imageUrl())
+                                <img src="{{ $agent_post->imageUrl() }}" alt="">
+                            @endif
                             @endisset
                             <input type="file" name="image">
                         </div>

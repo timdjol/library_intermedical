@@ -49,8 +49,7 @@
                             <label for="parent">Родительская категория</label>
                             <select name="parent_id" id="parent">
                                 @isset($admin_category)
-                                    <option value="{{ $admin_category->parent_id }}">{{ $admin_category->parent->title
-                                    }}</option>
+                                    <option value="{{ $admin_category->parent_id }}">{{ $admin_category->parent->title ?? 'Без родительской категории' }}</option>
                                 @endisset
                                 <option value="0">--Без родительской категории</option>
                                 @foreach($categories as $category)

@@ -9,7 +9,9 @@
             <div class="row">
                 <div class="col-md-3">
                     @include('admin.layouts.sidebar')
-                    <img src="{{ Storage::url($agent_post->image) }}" alt="">
+                    @if($agent_post->imageUrl())
+                    <img src="{{ $agent_post->imageUrl() }}" alt="">
+                    @endif
                     <h4>
                         @foreach($agent_post->categories as $category)
                             @if($loop->last)

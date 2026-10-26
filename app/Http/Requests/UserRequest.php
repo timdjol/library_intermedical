@@ -3,38 +3,34 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UserRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
-     */
-
     public function rules(): array
     {
-        $rules = [
-            'name' => 'required|min:2|max:255',
-            'email' => 'required|min:2',
-            'password' => 'required',
+        $userId = $this->route('admin_user')?->id;
+
+        return [
+            'name' => ['required', 'string', 'min:2', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
+            'role' => ['required', Rule::in(['admin', 'agent'])],
+            'password' => [$this->isMethod('POST') ? 'required' : 'nullable', 'string', 'min:8', 'max:255'],
         ];
-        return $rules;
     }
 
     public function messages()
     {
-        return[
-            'required'=> 'Поле :attribute обязательно для ввода',
+        return [
+            'required' => 'Поле :attribute обязательно для ввода',
             'min' => 'Поле :attribute должно иметь минимум :min символов',
+            'email' => 'Укажите корректный email',
+            'unique' => 'Такой email уже зарегистрирован',
         ];
     }
 }

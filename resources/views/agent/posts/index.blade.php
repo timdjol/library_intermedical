@@ -39,7 +39,7 @@
                         @foreach($posts as $post)
                             <tr>
                                 <td>{{ $post->id }}</td>
-                                <td><img src="{{ Storage::url($post->image) }}" alt=""></td>
+                                <td>@if($post->imageUrl())<img src="{{ $post->imageUrl() }}" alt="">@endif</td>
                                 <td>{{ $post->title }}</td>
                                 <td>
                                     @foreach($post->categories as $category)

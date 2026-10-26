@@ -41,19 +41,14 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => 'user',
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        Event::create(
-            [
-                'user_ip' => request()->getClientIp(),
-                'user_id' => Auth::id(),
-                'title_event' => 'Зарегистрирован пользователь',
-            ]
-        );
+        Event::record('Зарегистрирован пользователь');
 
         return redirect(RouteServiceProvider::HOME);
     }

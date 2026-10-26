@@ -3,36 +3,40 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CategoryRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
-     */
     public function rules(): array
     {
-        $rules = [
-            'title' => 'required|min:3|max:255',
+        $category = $this->route('admin_category');
+
+        return [
+            'title' => ['required', 'string', 'min:3', 'max:255'],
+            'parent_id' => [
+                'required',
+                'integer',
+                'min:0',
+                Rule::when((int) $this->input('parent_id') > 0, ['exists:categories,id']),
+                function (string $attribute, mixed $value, \Closure $fail) use ($category): void {
+                    if ($category && (int) $value === $category->id) {
+                        $fail('Категория не может быть родителем самой себя');
+                    }
+                },
+            ],
         ];
-       return $rules;
     }
 
     public function messages()
     {
-        return[
-          'required'=>'Поле :attribute обязательно для ввода',
+        return [
+            'required' => 'Поле :attribute обязательно для ввода',
             'min' => 'Поле :attribute должно иметь минимум :min символов',
-            'code.min' => 'Поле код должно содержать не менее :min символов'
         ];
     }
 }

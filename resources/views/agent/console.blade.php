@@ -21,13 +21,13 @@
                     <div class="row justify-content-center">
                         <div class="col-md-4">
                             <div class="dashboard-item">
-                                <div class="num">{{ count($posts) }}</div>
+                                <div class="num">{{ $postsCount }}</div>
                                 <h5>Количество <br> записей</h5>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="dashboard-item">
-                                <div class="num">{{ count($categories) }}</div>
+                                <div class="num">{{ $categoriesCount }}</div>
                                 <h5>Количество <br> категорий</h5>
                             </div>
                         </div>

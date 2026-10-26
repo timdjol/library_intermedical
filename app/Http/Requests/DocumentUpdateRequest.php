@@ -6,33 +6,28 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class DocumentUpdateRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
-     */
-
     public function rules(): array
     {
-        $rules = [
-            'path' => 'file|mimes:pdf,doc,xls,docx,xlsx,txt|max:10000',
+        return [
+            'title' => ['required', 'string', 'min:3', 'max:255'],
+            'path' => ['nullable', 'file', 'mimes:pdf,doc,xls,docx,xlsx,txt', 'max:10000'],
+            'categories_id' => ['required', 'array', 'min:1'],
+            'categories_id.*' => ['integer', 'exists:categories,id'],
+            'access' => ['required', 'in:0,1'],
+            'status' => ['required', 'in:0,1'],
         ];
-        return $rules;
     }
 
     public function messages()
     {
-        return[
+        return [
             'mimes' => 'Документ должен быть формата pdf,doc,xls,docx,xlsx,txt',
-            'max' => 'Размер изображения не должно превышать 10Мб',
+            'max' => 'Размер файла не должен превышать 10 Мб',
             'file' => 'Загрузите файл',
         ];
     }

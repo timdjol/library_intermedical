@@ -19,16 +19,10 @@
                             <a href="{{ url()->previous() }}" class="btn btn-warning">Назад</a>
                         </div>
                     </div>
-                    @if(!$cats->isEmpty())
+                    @if($documents->isNotEmpty())
                         <ul>
-                            @foreach($cats as $cat)
-                                @php
-                                    $agent_document = \App\Models\Document::where('id', $cat->document_id)->first();
-                                @endphp
-                                @isset($agent_document->id)
-                                    <li><a href="{{ route('agent-documents.show', $agent_document->id) }}"><img src="{{
-                           route('index')}}/img/file.svg" alt=""> {{ $agent_document->title }}</a></li>
-                                @endisset
+                            @foreach($documents as $agent_document)
+                                <li><a href="{{ route('agent-documents.show', $agent_document) }}"><img src="{{ route('index') }}/img/file.svg" alt=""> {{ $agent_document->title }}</a></li>
                             @endforeach
                         </ul>
                     @else
